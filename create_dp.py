@@ -20,7 +20,8 @@ cursor.execute("DELETE FROM sqlite_sequence WHERE name='Sales'")
 cursor.execute("DELETE FROM Customers")
 cursor.execute("DELETE FROM sqlite_sequence WHERE name='Customers'")
 
-
+cursor.execute("DELETE FROM Sale_Items")
+cursor.execute("DELETE FROM sqlite_sequence WHERE name='Sale_Items'")
 
 conn.commit()
 conn.close()
