@@ -30,6 +30,9 @@ CREATE TABLE IF NOT EXISTS Customers (
 cursor.execute("DELETE FROM Customers")
 cursor.execute("DELETE FROM sqlite_sequence WHERE name='Customers'")
 
+cursor.execute("""ALTER TABLE Customers
+               ADD COLUMN cart TEXT""")
+
 conn.commit()
 conn.close()
 
