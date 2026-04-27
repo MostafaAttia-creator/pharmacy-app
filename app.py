@@ -1,43 +1,32 @@
+
 import streamlit as st
 import sqlite3
 import pandas as pd
 
-# =========================
 # Page Config
-# =========================
 st.set_page_config(
     page_title="Pharmacy System",
     page_icon="💊",
     layout="wide"
 )
 
-# =========================
 # DB
-# =========================
 conn = sqlite3.connect("pharmacy.db")
 cursor = conn.cursor()
 
-# =========================
 # Title
-# =========================
 st.title("💊 Pharmacy Sales System")
 
-# =========================
 # Load Data
-# =========================
 medicines = pd.read_sql_query("SELECT * FROM Medicines", conn)
 customers = pd.read_sql_query("SELECT * FROM Customers", conn)
 sales = pd.read_sql_query("SELECT * FROM Sales", conn)
 
-# =========================
 # Sidebar
-# =========================
 st.sidebar.header("⚙️ Navigation")
 page = st.sidebar.radio("Go to", ["Sales", "Database"])
 
-# =========================
 # SALES PAGE
-# =========================
 if page == "Sales":
 
     st.subheader("📊 Dashboard")
@@ -49,9 +38,7 @@ if page == "Sales":
 
     st.divider()
 
-    # =========================
-    # Input Section
-    # =========================
+# Input Section
     col1, col2 = st.columns(2)
 
     with col1:
@@ -69,16 +56,12 @@ if page == "Sales":
     price = med_row["Price"]
     stock = med_row["Quantity"]
 
-    # =========================
-    # Info Section
-    # =========================
+# Info Section
     info1, info2 = st.columns(2)
     info1.info(f"💰 Price: {price}")
     info2.warning(f"📦 Stock: {stock}")
 
-    # =========================
-    # Quantity
-    # =========================
+# Quantity
     if stock == 0:
         st.error("❌ Out of stock")
 
@@ -89,9 +72,7 @@ if page == "Sales":
         step=1
     )
 
-    # =========================
-    # Cart
-    # =========================
+# Cart
     if "cart" not in st.session_state:
         st.session_state.cart = []
 
@@ -116,9 +97,7 @@ if page == "Sales":
             st.session_state.cart = []
             st.warning("Cart cleared")
 
-    # =========================
-    # Show Cart
-    # =========================
+# Show Cart
     st.subheader("🛒 Cart")
 
     if len(st.session_state.cart) == 0:
@@ -130,52 +109,49 @@ if page == "Sales":
         total = cart_df["total"].sum()
         st.success(f"💰 Total = {total}")
 
-    # =========================
-    # Sell
-    # =========================
-if st.button("🛒 Sell Now", use_container_width=True):
+        # Sell
+    if st.button("🛒 Sell Now", width="stretch"):
 
-    if not customer_name:
-        st.error("Enter customer name")
+        if not customer_name:
+            st.error("Enter customer name")
 
-    elif len(st.session_state.cart) == 0:
-        st.error("Cart is empty")
+        elif len(st.session_state.cart) == 0:
+            st.error("Cart is empty")
 
-    else:
-        cursor.execute("SELECT Customer_ID FROM Customers WHERE Name = ?", (customer_name,))
-        row = cursor.fetchone()
-
-        if row:
-            customer_id = row[0]
         else:
-            cursor.execute("INSERT INTO Customers (Name) VALUES (?)", (customer_name,))
-            conn.commit()
-            customer_id = cursor.lastrowid
+            cursor.execute("SELECT Customer_ID FROM Customers WHERE Name = ?", (customer_name,))
+            row = cursor.fetchone()
 
-        total = sum(item["total"] for item in st.session_state.cart)
+            if row:
+                customer_id = row[0]
+            else:
+                cursor.execute("INSERT INTO Customers (Name) VALUES (?)", (customer_name,))
+                conn.commit()
+                customer_id = cursor.lastrowid
 
-        cursor.execute("""
-            INSERT INTO Sales (Customer_ID, Total_Amount)
-            VALUES (?, ?)
-        """, (customer_id, total))
-        
-
-        for item in st.session_state.cart:
+            total = sum(item["total"] for item in st.session_state.cart)
 
             cursor.execute("""
-                UPDATE Medicines
-                SET Quantity = Quantity - ?
-                WHERE Med_ID = ?
-            """, (item["qty"], item["med_id"]))
+                INSERT INTO Sales (Customer_ID, Total_Amount)
+                VALUES (?, ?)
+            """, (customer_id, total))
+            
 
-        conn.commit()
+            for item in st.session_state.cart:
 
-        st.session_state.cart = []
-        st.success(f"✅ Sale completed! Total = {total}")
-        st.rerun()
-# =========================
+                cursor.execute("""
+                    UPDATE Medicines
+                    SET Quantity = Quantity - ?
+                    WHERE Med_ID = ?
+                """, (item["qty"], item["med_id"]))
+
+            conn.commit()
+
+            st.session_state.cart = []
+            st.success(f"✅ Sale completed! Total = {total}")
+            st.rerun()
+
 # DATABASE PAGE
-# =========================
 elif page == "Database":
 
     st.subheader("🗂️ Database Tables")
@@ -194,7 +170,5 @@ elif page == "Database":
         df = pd.read_sql_query("SELECT * FROM Sales", conn)
         st.dataframe(df, use_container_width=True)
 
-# =========================
 # Close
-# =========================
 conn.close()
