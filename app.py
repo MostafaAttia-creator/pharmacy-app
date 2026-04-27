@@ -79,7 +79,7 @@ if page == "Sales":
     col1, col2 = st.columns(2)
 
     with col1:
-        if st.button("➕ Add to Cart", use_container_width=True):
+        if st.button("➕ Add to Cart", width='stretch'):
             if stock == 0:
                 st.error("No stock available")
             else:
@@ -93,7 +93,7 @@ if page == "Sales":
                 st.success("Added to cart")
 
     with col2:
-        if st.button("🗑️ Clear Cart", use_container_width=True):
+        if st.button("🗑️ Clear Cart", width='stretch'):
             st.session_state.cart = []
             st.warning("Cart cleared")
 
@@ -104,7 +104,7 @@ if page == "Sales":
         st.info("Cart is empty")
     else:
         cart_df = pd.DataFrame(st.session_state.cart)
-        st.dataframe(cart_df, use_container_width=True)
+        st.dataframe(cart_df, width='stretch')
 
         total = cart_df["total"].sum()
         st.success(f"💰 Total = {total}")
@@ -177,18 +177,18 @@ elif page == "Database":
 
     with tab1:
         df = pd.read_sql_query("SELECT * FROM Medicines", conn)
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(df, width='stretch')
 
     with tab2:
         df = pd.read_sql_query("SELECT * FROM Customers", conn)
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(df, width='stretch')
 
     with tab3:
         df = pd.read_sql_query("SELECT * FROM Sales", conn)
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(df, width='stretch')
     with tab4:
-        df = pd.read_sql_query("SELECT * FROM Sale_items", conn)
-        st.dataframe(df, use_container_width=True)
+        df = pd.read_sql_query("SELECT * FROM Sale_Items", conn)
+        st.dataframe(df, width='stretch')
 
 # Close
 conn.close()
