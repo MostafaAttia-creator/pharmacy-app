@@ -84,7 +84,7 @@ if page == "Sales":
                 st.error("No stock available")
             else:
                 st.session_state.cart.append({
-                    "med_id": med_id,
+                    "med_id": int(med_id),
                     "name": medicine,
                     "qty": qty,
                     "price": price,
@@ -145,7 +145,6 @@ if page == "Sales":
                     WHERE Med_ID = ?
                 """, (item["qty"], item["med_id"]))
 
-            conn.commit()
 
             sale_id = cursor.lastrowid
 
@@ -164,6 +163,9 @@ if page == "Sales":
 
             st.session_state.cart = []
             st.success(f"✅ Sale completed! Total = {total}")
+
+            
+            conn.commit()
             st.rerun()
 
 # DATABASE PAGE
