@@ -109,7 +109,7 @@ if page == "Sales":
         total = cart_df["total"].sum()
         st.success(f"💰 Total = {total}")
 
-        # Sell
+    # Sell
     if st.button("🛒 Sell Now", width="stretch"):
 
         if not customer_name:
@@ -132,7 +132,7 @@ if page == "Sales":
             total = sum(item["total"] for item in st.session_state.cart)
 
             cursor.execute("""
-                INSERT INTO Sales (Customer_ID, Total_Amount)
+                INSERT INTO Sales (Customer_ID,Total_Amount)
                 VALUES (?, ?)
             """, (customer_id, total))
             
@@ -147,6 +147,21 @@ if page == "Sales":
 
             conn.commit()
 
+            sale_id = cursor.lastrowid
+
+            for item in st.session_state.cart:
+                cursor.execute("""
+                    INSERT INTO Sale_Items (Sale_ID, Med_ID, Med_Name, Quantity, Price, Total)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (
+                    sale_id,
+                    item["med_id"],
+                    item["name"],
+                    item["qty"],
+                    item["price"],
+                    item["qty"] * item["price"]
+                ))
+
             st.session_state.cart = []
             st.success(f"✅ Sale completed! Total = {total}")
             st.rerun()
@@ -156,7 +171,9 @@ elif page == "Database":
 
     st.subheader("🗂️ Database Tables")
 
-    tab1, tab2, tab3 = st.tabs(["💊 Medicines", "👥 Customers", "🧾 Sales"])
+    tab1, tab2, tab3, tab4 = st.tabs(
+    ["💊 Medicines", "👥 Customers", "🧾 Sales", "📦 Sale Items"]
+)
 
     with tab1:
         df = pd.read_sql_query("SELECT * FROM Medicines", conn)
@@ -168,6 +185,9 @@ elif page == "Database":
 
     with tab3:
         df = pd.read_sql_query("SELECT * FROM Sales", conn)
+        st.dataframe(df, use_container_width=True)
+    with tab4:
+        df = pd.read_sql_query("SELECT * FROM Sale_items", conn)
         st.dataframe(df, use_container_width=True)
 
 # Close
